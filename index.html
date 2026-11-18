@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Factur’Minute – Générateur de facture micro-entrepreneur gratuit</title>
+<meta name="description" content="Créez une facture conforme de micro-entrepreneur en 1 minute : mentions légales, TVA non applicable, export PDF. Gratuit, sans inscription.">
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--tx:#1a1f2b;--mut:#5c6578;--ac:#2563eb;--acx:#fff;--bd:#dde1e9;--ok:#0f7a4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10131a;--card:#181c26;--tx:#eef0f5;--mut:#9aa3b5;--ac:#5b8cff;--acx:#0b0f18;--bd:#2a3040;--ok:#4cd39a}}
+:root[data-theme="dark"]{--bg:#10131a;--card:#181c26;--tx:#eef0f5;--mut:#9aa3b5;--ac:#5b8cff;--acx:#0b0f18;--bd:#2a3040;--ok:#4cd39a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:960px;margin:0 auto;padding:20px 16px}
+h1{font-size:clamp(1.7rem,5vw,2.5rem);line-height:1.15;margin:.3em 0}
+h2{margin:1.6em 0 .5em}
+.mut{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:12px 0}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+label{display:block;font-size:.85rem;color:var(--mut);margin:8px 0 2px}
+input,textarea,select{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+button,.btn{background:var(--ac);color:var(--acx);border:0;border-radius:10px;padding:11px 18px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+button.s{background:transparent;color:var(--ac);border:1px solid var(--ac)}
+.row{display:grid;grid-template-columns:3fr 1fr 1.3fr 32px;gap:6px;margin:4px 0}
+.tot{text-align:right;font-weight:700;font-size:1.2rem}
+.price{font-size:2rem;font-weight:800}
+.ok{color:var(--ok)}
+.tbl{overflow-x:auto}
+#prev{display:none}
+@media print{body{background:#fff;color:#000}.noprint{display:none!important}#prev{display:block!important}}
+#prev{background:#fff;color:#111;padding:24px;border:1px solid var(--bd);border-radius:8px}
+#prev table{width:100%;border-collapse:collapse;margin:16px 0}
+#prev th,#prev td{border-bottom:1px solid #ccc;padding:6px;text-align:left}
+#prev td.r,#prev th.r{text-align:right}
+footer{margin:40px 0 20px;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="noprint">
+<p style="display:flex;align-items:center;gap:10px"><svg width="36" height="36" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#2563eb"/><path d="M18 14h22l8 8v28H18z" fill="#fff"/><path d="M40 14v8h8" fill="#c7d7fb"/><path d="M24 30h20M24 37h20M24 44h12" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/></svg><strong style="font-size:1.2rem">Factur’Minute</strong></p>
+<h1>Votre facture de micro-entrepreneur, conforme, en 1 minute.</h1>
+<p class="mut">Gratuit, sans inscription. Vos données restent dans votre navigateur et ne sont jamais envoyées sur un serveur.</p>
+
+<div class="card">
+<div class="g">
+<div><strong>Vous (émetteur)</strong>
+<label>Nom / raison sociale</label><input id="en">
+<label>Adresse</label><textarea id="ea" rows="2"></textarea>
+<label>SIRET</label><input id="es">
+<label>Email / téléphone</label><input id="ec"></div>
+<div><strong>Client</strong>
+<label>Nom / société</label><input id="cn">
+<label>Adresse</label><textarea id="ca" rows="2"></textarea>
+<label>N° de TVA (optionnel)</label><input id="cv"></div>
+<div><strong>Facture</strong>
+<label>Numéro</label><input id="no" value="F-2026-001">
+<label>Date</label><input id="dt" type="date">
+<label>Échéance (jours)</label><input id="ech" type="number" value="30" min="0">
+<label>Régime de TVA</label>
+<select id="tva"><option value="0">TVA non applicable, art. 293 B du CGI</option><option value="20">TVA 20 %</option><option value="10">TVA 10 %</option><option value="5.5">TVA 5,5 %</option></select>
+<label>Nature</label><select id="nat"><option>Prestation de services</option><option>Vente de marchandises</option></select></div>
+</div>
+<h3>Lignes</h3>
+<div id="lines"></div>
+<button class="s" id="add" type="button">+ Ajouter une ligne</button>
+<p class="tot" id="tt"></p>
+<button id="go" type="button">Générer la facture</button>
+<span class="mut" id="msg"></span>
+</div>
+</div>
+
+<div id="prev"></div>
+<div class="noprint" id="after" style="display:none">
+<button id="pr" type="button">Imprimer / Enregistrer en PDF</button>
+<button class="s" id="ed" type="button">Modifier</button>
+</div>
+
+<div class="noprint">
+<h2>Pourquoi cette facture est conforme</h2>
+<div class="card">
+<p>Elle contient les mentions usuelles exigées pour une facture française : identité et SIRET, coordonnées du client, numéro unique, date, désignation, quantités, prix, total, mention de TVA, conditions de paiement et pénalités de retard (3 fois le taux d’intérêt légal), ainsi que l’indemnité forfaitaire de recouvrement de 40 €.</p>
+<p class="mut">Outil d’aide à la rédaction : il ne remplace pas un conseil comptable ou juridique. Vérifiez les règles applicables à votre situation, notamment l’obligation progressive de facturation électronique.</p>
+</div>
+
+<h2>Pack Pro : 12 modèles prêts à l’emploi</h2>
+<div class="card">
+<p class="price">9 € <span class="mut" style="font-size:1rem">paiement unique</span></p>
+<ul>
+<li class="ok">Devis, facture, acompte, avoir, relance 1/2/3 (modèles Word/Google Docs et PDF)</li>
+<li class="ok">Tableur de suivi du chiffre d’affaires et des cotisations URSSAF</li>
+<li class="ok">Checklist de première facture et calendrier des déclarations</li>
+</ul>
+<a class="btn" id="buy" href="PAYMENT_URL_A_REMPLACER">Obtenir le pack</a>
+</div>
+
+<h2>Questions fréquentes</h2>
+<div class="card"><strong>Mes données sont-elles stockées ?</strong><br>Non. Tout se passe dans votre navigateur.</div>
+<div class="card"><strong>Faut-il indiquer la TVA ?</strong><br>En franchise en base de TVA, indiquez « TVA non applicable, art. 293 B du CGI ».</div>
+<div class="card"><strong>Comment obtenir un PDF ?</strong><br>Cliquez sur « Imprimer », puis choisissez « Enregistrer au format PDF ».</div>
+<footer class="mut">© Factur’Minute · Éditeur : [NOM PRÉNOM, entrepreneur individuel, SIRET, adresse, email de contact] · Hébergeur : [GitHub Pages / autre] · Aucune garantie de résultat · Cet outil ne stocke ni ne transmet vos données : tout reste dans votre navigateur. Pas de cookies de suivi.</footer>
+</div>
+</div>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var lines=$('lines');
+function eur(n){return (Math.round(n*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function nl(s){return esc(s).replace(/\n/g,'<br>')}
+function addLine(d,q,p){
+  var r=document.createElement('div');r.className='row';
+  r.innerHTML='<input class="d" placeholder="Description" value="'+esc(d||'')+'"><input class="q" type="number" min="0" step="any" value="'+(q||1)+'"><input class="p" type="number" min="0" step="any" placeholder="Prix unitaire" value="'+(p||'')+'"><button type="button" class="s x" style="padding:4px">×</button>';
+  r.oninput=tot;r.querySelector('.x').onclick=function(){r.remove();tot()};
+  lines.appendChild(r);
+}
+function data(){
+  var out=[];lines.querySelectorAll('.row').forEach(function(r){
+    var d=r.querySelector('.d').value,q=parseFloat(r.querySelector('.q').value)||0,p=parseFloat(r.querySelector('.p').value)||0;
+    if(d||p)out.push({d:d,q:q,p:p});
+  });return out;
+}
+function tot(){
+  var ht=data().reduce(function(a,l){return a+l.q*l.p},0),t=parseFloat($('tva').value)||0;
+  $('tt').textContent='Total à payer : '+eur(ht*(1+t/100));
+  save();
+}
+var ids=['en','ea','es','ec','cn','ca','cv','no','ech','tva','nat'];
+function save(){try{var o={};ids.forEach(function(i){o[i]=$(i).value});localStorage.setItem('fm1',JSON.stringify(o))}catch(e){}}
+function load(){try{var o=JSON.parse(localStorage.getItem('fm1')||'null');if(o)ids.forEach(function(i){if(o[i]!=null)$(i).value=o[i]})}catch(e){}}
+load();
+$('dt').value=new Date().toISOString().slice(0,10);
+addLine('',1,'');
+$('add').onclick=function(){addLine()};
+document.querySelectorAll('input,textarea,select').forEach(function(e){e.addEventListener('input',tot)});
+tot();
+$('go').onclick=function(){
+  var L=data();
+  if(!$('en').value||!$('cn').value||!L.length){$('msg').textContent=' Renseignez au minimum votre nom, le client et une ligne.';return}
+  $('msg').textContent='';
+  var t=parseFloat($('tva').value)||0,ht=L.reduce(function(a,l){return a+l.q*l.p},0),tv=ht*t/100;
+  var dt=new Date($('dt').value||Date.now()),ec=new Date(dt.getTime()+(parseInt($('ech').value)||0)*864e5);
+  var f=function(d){return d.toLocaleDateString('fr-FR')};
+  var h='<h2 style="margin-top:0">FACTURE '+esc($('no').value)+'</h2><p>Date : '+f(dt)+' · Échéance : '+f(ec)+'<br>'+esc($('nat').value)+'</p>'
+  +'<div style="display:flex;gap:24px;flex-wrap:wrap"><div style="flex:1;min-width:200px"><strong>'+esc($('en').value)+'</strong><br>'+nl($('ea').value)+'<br>SIRET : '+esc($('es').value)+'<br>'+esc($('ec').value)+'</div>'
+  +'<div style="flex:1;min-width:200px"><strong>'+esc($('cn').value)+'</strong><br>'+nl($('ca').value)+($('cv').value?'<br>TVA : '+esc($('cv').value):'')+'</div></div>'
+  +'<div class="tbl"><table><tr><th>Description</th><th class="r">Qté</th><th class="r">PU</th><th class="r">Total</th></tr>'
+  +L.map(function(l){return '<tr><td>'+esc(l.d)+'</td><td class="r">'+l.q+'</td><td class="r">'+eur(l.p)+'</td><td class="r">'+eur(l.q*l.p)+'</td></tr>'}).join('')+'</table></div>'
+  +'<p style="text-align:right">Total HT : '+eur(ht)+'<br>'+(t?'TVA '+t+' % : '+eur(tv):'TVA non applicable, art. 293 B du CGI')+'<br><strong>Total à payer : '+eur(ht+tv)+'</strong></p>'
+  +'<p style="font-size:.8rem">Paiement à réception ou au plus tard le '+f(ec)+'. En cas de retard : pénalités égales à 3 fois le taux d’intérêt légal et indemnité forfaitaire de recouvrement de 40 €. Pas d’escompte pour paiement anticipé.</p>';
+  $('prev').innerHTML=h;
+  document.querySelectorAll('.noprint').forEach(function(e){e.style.display='none'});
+  $('prev').style.display='block';$('after').style.display='block';
+  window.scrollTo(0,0);
+};
+$('ed').onclick=function(){
+  document.querySelectorAll('.noprint').forEach(function(e){e.style.display=''});
+  $('prev').style.display='none';$('after').style.display='none';
+};
+$('pr').onclick=function(){window.print()};
+})();
+</script>
+</body>
+</html>
